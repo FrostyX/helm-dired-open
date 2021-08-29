@@ -32,6 +32,9 @@ Or if you are a developer.
 
 ** Configuration
 
+The ~M-x helm-dired-open~ command works out of the box without any
+additional configuration. However ...
+
 By default, the list of associated applications is searched in the
 user-defined ~helm-dired-open-extensions~ variable and then in the XDG
 database. The first source that returns non-nil value is used, the
