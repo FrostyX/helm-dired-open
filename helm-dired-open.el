@@ -6,7 +6,7 @@
 ;; URL: https://github.com/FrostyX/helm-dired-open
 ;; Version: 0.1-pre
 ;; Package-Requires: ((emacs "26.3"))
-;; Keywords: comm, dired, open-with
+;; Keywords: comm, dired, open-with, xdg
 
 ;;; License:
 
@@ -30,7 +30,25 @@
 
 ;;; Code:
 
+;;;; Requirements
+
+(require 'xdg)
+(require 'mailcap)
+
 ;;;; Customization
+
+(defcustom helm-dired-open-functions
+  '(helm-dired-open-configured-applications
+    helm-dired-open-xdg-applications)
+  "A list of functions returning a list of applications that can open a given
+file extension. A first non-nil result is used, the rest of the functions is
+not called.
+
+Customize this variable to either provide your own source, or disable some of
+the preconfigured ones.
+"
+  :type '(repeat (choice symbol))
+  :group 'helm-dired-open)
 
 (defcustom helm-dired-open-extensions nil
   "Alist of extensions mapping to a programs to run them in.
@@ -65,6 +83,34 @@ fallback to simply running `dired-open-file'."
 
 ;;;; Functions
 
+;;;;; Public
+
+(defun helm-dired-open-configured-applications (extension)
+  "Provide a list of applications that can open this file extension.
+The applications are returned as `(EXECUTABLE . TITLE)' tuples.
+The list of applications is generated from an user-configured variable
+`helm-dired-open-extensions'."
+  (let ((associations (cdr (assoc extension helm-dired-open-extensions))))
+    (mapcar
+     (lambda (pair)
+       (cons (cdr pair) (car pair)))
+     associations)))
+
+(defun helm-dired-open-xdg-applications (extension)
+  "Provide a list of applications that can open this file extension.
+The applications are returned as `(EXECUTABLE . TITLE)' tuples.
+The list of applications is generated from the xdg subsystem."
+  (let* ((extension (helm-dired-open--dired-file-extension))
+		 (mimetype (mailcap-extension-to-mime extension))
+		 (applications (xdg-mime-apps mimetype)))
+	(mapcar
+	 (lambda (app)
+	   (let ((hash (xdg-desktop-read-file app)))
+		 (cons
+		  (gethash "Name" hash)
+		  (gethash "TryExec" hash))))
+	 applications)))
+
 ;;;;; Private
 
 (defun helm-dired-open--dired-file-extension ()
@@ -72,13 +118,14 @@ fallback to simply running `dired-open-file'."
   (file-name-extension (dired-get-file-for-visit)))
 
 (defun helm-dired-open--candidates ()
-  "Return the Helm candidates for the currently selected file in Dired."
-  (let* ((extension (helm-dired-open--dired-file-extension))
-         (associations (cdr (assoc extension helm-dired-open-extensions))))
-    (mapcar
-     (lambda (pair)
-       (cons (cdr pair) (car pair)))
-     associations)))
+  "Return the Helm candidates for the currently selected file in Dired.
+We find the list of candidates by calling functions from
+`helm-dired-open-functions' one by one until any of them returns non-nil."
+  (let* ((extension (helm-dired-open--dired-file-extension)))
+	(some
+	 (lambda (f)
+	   (funcall f extension))
+	 helm-dired-open-functions)))
 
 (defun helm-dired-open--source ()
   "Helm source providing a list of programs that can open a file"
