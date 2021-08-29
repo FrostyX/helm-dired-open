@@ -32,6 +32,7 @@
 
 ;;;; Requirements
 
+(require 's)
 (require 'xdg)
 (require 'mailcap)
 
@@ -135,9 +136,44 @@ We find the list of candidates by calling functions from
 
 (defun helm-dired-open--action (candidate)
   "Use the selected candidate executable to open a file."
-  (let* ((extension (helm-dired-open--dired-file-extension))
-         (dired-open-extensions (list (cons extension candidate))))
-    (dired-open-by-extension)))
+  (let* ((path (dired-get-file-for-visit))
+         (extension (helm-dired-open--dired-file-extension))
+         (dired-open-extensions (list (cons extension candidate)))
+         (cmd (helm-dired-open--xdg-format-exec candidate path)))
+    ;; If the executable string doesn't contain any XDG exec formatting, we can
+    ;; rely on `dired-open-by-extension' command from `dired-open' but otherwise
+    ;; we need to use our custom function to run the process.
+    (if (string-equal candidate cmd)
+        (dired-open-by-extension)
+      (helm-dired-open--start-process cmd))))
+
+(defun helm-dired-open--xdg-format-exec (exec path)
+  "Format XDG application Exec string and return a full command that can be
+executed. For the list of keys and their meaning, please see
+https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html#exec-variables
+
+Oh cmon ... this must be already implemented somewhere.
+"
+  (let* ((url path)
+         (cmd exec)
+         (cmd (s-replace "%f" path cmd))
+         (cmd (s-replace "%F" path cmd))
+         (cmd (s-replace "%u" url cmd))
+         (cmd (s-replace "%U" url cmd))
+         (cmd (s-replace "%i" "" cmd))
+         (cmd (s-replace "%c" "" cmd))
+         (cmd (s-replace "%k" "" cmd)))
+    cmd))
+
+(defun helm-dired-open--start-process (cmd)
+  "The functions for running processes implemented in `dired-open' doesn't
+support inputting only a command (already containing the file) but always
+operate with an executable and then concatenating a file at the end of the
+line. That is not suitable for XDG applications that contain formatting in their
+Exec and expect us to inject the filename into a specific part of the string."
+  (apply 'start-process
+         (append '("helm-dired-open" nil)
+                 (split-string cmd))))
 
 ;;;; Footer
 
