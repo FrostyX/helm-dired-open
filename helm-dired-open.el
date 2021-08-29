@@ -76,10 +76,10 @@ Configure your filetype to programs associations in
 fallback to simply running `dired-open-file'."
   (interactive)
   (let* ((source (helm-dired-open--source))
-		 (candidates (alist-get 'candidates source)))
-	(if candidates
-		(helm :sources source)
-	  (dired-open-file))))
+         (candidates (alist-get 'candidates source)))
+    (if candidates
+        (helm :sources source)
+      (dired-open-file))))
 
 ;;;; Functions
 
@@ -101,15 +101,15 @@ The list of applications is generated from an user-configured variable
 The applications are returned as `(EXECUTABLE . TITLE)' tuples.
 The list of applications is generated from the xdg subsystem."
   (let* ((extension (helm-dired-open--dired-file-extension))
-		 (mimetype (mailcap-extension-to-mime extension))
-		 (applications (xdg-mime-apps mimetype)))
-	(mapcar
-	 (lambda (app)
-	   (let ((hash (xdg-desktop-read-file app)))
-		 (cons
-		  (gethash "Name" hash)
-		  (gethash "TryExec" hash))))
-	 applications)))
+         (mimetype (mailcap-extension-to-mime extension))
+         (applications (xdg-mime-apps mimetype)))
+    (mapcar
+     (lambda (app)
+       (let ((hash (xdg-desktop-read-file app)))
+         (cons
+          (gethash "Name" hash)
+          (gethash "Exec" hash))))
+     applications)))
 
 ;;;;; Private
 
@@ -122,10 +122,10 @@ The list of applications is generated from the xdg subsystem."
 We find the list of candidates by calling functions from
 `helm-dired-open-functions' one by one until any of them returns non-nil."
   (let* ((extension (helm-dired-open--dired-file-extension)))
-	(some
-	 (lambda (f)
-	   (funcall f extension))
-	 helm-dired-open-functions)))
+    (some
+     (lambda (f)
+       (funcall f extension))
+     helm-dired-open-functions)))
 
 (defun helm-dired-open--source ()
   "Helm source providing a list of programs that can open a file"
