@@ -1,0 +1,97 @@
+#+TITLE: helm-dired-open
+
+Right-clicking a file in most GUI file managers provides an
+"Open with" menu for choosing an application to be used. This package
+implements such functionality for Emacs default file manager Dired.
+
+[[images/helm-dired-open.png]]
+
+** Installation
+
+The package is not available on MELPA yet, please use Quelpa (or your
+preferred package manager) to install.
+
+#+BEGIN_SRC emacs-lisp
+(use-package helm-dired-open
+  :ensure t
+  :quelpa (helm-dired-open
+           :fetcher github
+           :repo "FrostyX/helm-dired-open"
+           :branch "master"))
+#+END_SRC
+
+Or if you are a developer.
+
+#+BEGIN_SRC emacs-lisp
+(use-package helm-dired-open
+  :ensure t
+  :quelpa (helm-dired-open
+           :fetcher file
+           :path "~/git/helm-dired-open"))
+#+END_SRC
+
+** Configuration
+
+By default, the list of associated applications is searched in the
+user-defined ~helm-dired-open-extensions~ variable and then in the XDG
+database. The first source that returns non-nil value is used, the
+rest is not evaluated. To add a custom source, disable some
+predefined, or change their order, configure
+~helm-dired-open-functions~.
+
+#+BEGIN_SRC emacs-lisp
+(setq helm-dired-open-functions
+      '(helm-dired-open-configured-applications
+        helm-dired-open-xdg-applications))
+#+END_SRC
+
+*** Custom applications
+
+The configuration schema was inspired by and tries to resemble the
+~dired-open-extensions~ variable from ~dired-open~ (provided by
+~dired-hacks~ package). See the following example.
+
+#+BEGIN_SRC emacs-lisp
+(setq helm-dired-open-extensions
+      (let ((images
+             '(("eog" . "Open with image viewer")
+               ("pinta" . "Edit in pinta")
+               ("gimp" . "Edit in GIMP")))
+            (video
+             '(("vlc --one-instance" . "Play in VLC")
+               ("vlc --one-instance --playlist-enqueue" . "Add to VLC queue"))))
+            `(("png" . ,images)
+              ("jpg" . ,images)
+              ("mp4" . ,video)
+              ("avi" . ,video))))
+#+END_SRC
+
+*** Custom applications with icons
+
+One of the many options to make the list of applications a bit cooler.
+
+#+BEGIN_SRC emacs-lisp
+
+(setq helm-dired-open-extensions
+      (let ((images
+             `(("eog" .
+                ,(format "%s Open with image viewer" (fontawesome "image")))
+               ("pinta" .
+                ,(format "%s Edit in pinta" (fontawesome "edit")))
+               ("gimp" .
+                ,(format "%s Edit in GIMP" (fontawesome "edit")))))
+            (video
+             `(("vlc --one-instance" .
+                ,(format "%s Play in VLC" (fontawesome "play")))
+               ("vlc --one-instance --playlist-enqueue" .
+                ,(format "%s Add to VLC queue" (fontawesome "list"))))))
+        `(("png" . ,images)
+          ("jpg" . ,images)
+          ("mp4" . ,video)
+          ("avi" . ,video))))
+#+END_SRC
+
+** Credits
+
+Based on [[https://github.com/emacs-helm/helm][Helm]] and
+[[https://github.com/Fuco1/dired-hacks#dired-open][dired-open]].
