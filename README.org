@@ -17,7 +17,7 @@ preferred package manager) to install.
   :quelpa (helm-dired-open
            :fetcher github
            :repo "FrostyX/helm-dired-open"
-           :branch "master"))
+           :branch "main"))
 #+END_SRC
 
 Or if you are a developer.
