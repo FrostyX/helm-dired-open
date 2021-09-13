@@ -6,7 +6,7 @@
 ;; URL: https://github.com/FrostyX/helm-dired-open
 ;; Version: 0.1-pre
 ;; Package-Requires: ((emacs "26.3"))
-;; Keywords: comm, dired, open-with, xdg
+;; Keywords: helm, dired, open-with, xdg
 
 ;;; License:
 
