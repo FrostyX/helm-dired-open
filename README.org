@@ -4,6 +4,8 @@ Right-clicking a file in most GUI file managers provides an
 "Open with" menu for choosing an application to be used. This package
 implements such functionality for Emacs default file manager Dired.
 
+You can see it in action [[https://www.youtube.com/watch?v=ZU1E0M8FAX4][in this video]].
+
 [[images/helm-dired-open.png]]
 
 ** Installation
