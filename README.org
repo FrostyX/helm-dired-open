@@ -1,5 +1,10 @@
 #+TITLE: helm-dired-open
 
+#+BEGIN_QUOTE
+[!IMPORTANT]  
+It is recommended to migrate to [[https://github.com/FrostyX/dired-open-with][dired-open-with]].
+#+END_QUOTE
+
 Right-clicking a file in most GUI file managers provides an
 "Open with" menu for choosing an application to be used. This package
 implements such functionality for Emacs default file manager Dired.
